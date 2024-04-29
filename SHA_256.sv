@@ -37,6 +37,7 @@ module sha_256_accelerator (clk, rst, ena, input_data, output_hash, output_valid
 
 input wire clk, rst, ena;
 input wire[511:0] input_data; // Input to this module is always 512 bits long
+output logic [31:0] chunk1,chunk2,chunk3,chunk4,chunk5,chunk6,chunk7,chunk8,chunk9,chunk10,chunk11,chunk12,chunk13,chunk14,chunk15,chunk16;
 
 output logic[255:0] output_hash; // The output hash is always 256 bits long
 output logic output_valid;
@@ -48,6 +49,57 @@ always_comb begin
 end
 
 
+
+assign w = {input_data, }
+
+	always_comb begin : chunking
+		chunk1  = input_data[31:0]
+		chunk2  = input_data[63:32]
+		chunk3  = input_data[95:64]
+		chunk4  = input_data[127:96]
+		chunk5  = input_data[159:128]
+		chunk6  = input_data[191:160]
+		chunk7  = input_data[223:192]
+		chunk8  = input_data[255:224]
+		chunk9  = input_data[287:256]
+		chunk10 = input_data[319:288]
+		chunk11 = input_data[351:320]
+		chunk12 = input_data[383:352]
+		chunk13 = input_data[415:384]
+		chunk14 = input_data[447:416]
+		chunk15 = input_data[479:448]
+		chunk16 = input_data[511:480]
+	end
+
+// looping functions
+	function [31:0] ch;
+		input [31:0] e,f,g;
+		else ch = (e & f) ^ (~e & g);
+	endfunction
+
+	function [31:0] maj;
+		input [31:0] a,b,c;
+		maj = (a & b) ^ (a & c) ^ (b & c);
+	endfunction
+
+	function [31:0] sum0;
+		input [31:0] a;
+		else sum0 = {a[1:0],a[31:2]} ^ {a[12:0],a[31:13]} ^ {a[21:0],a[31:22]};
+	endfunction
+
+	function [31:0] sum1;
+		input [31:0] e;
+		sum1 = {e[5:0],e[31:6]} ^ {e[10:0],e[31:11]} ^ {e[24:0],e[31:25]};
+	endfunction
+
+	logic [31:0] ch_efg, maj_abc, sum0_a, sum1_e, kj, wj;
+
+	always_comb begin
+		ch_efg = ch(e,f,g);
+		maj_abc = maj(a,b,c);
+		sum0_a = sum0(a);
+		sum1_e = sum1(e);
+	end
 
 endmodule
 

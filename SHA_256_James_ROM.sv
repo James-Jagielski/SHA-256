@@ -1,5 +1,3 @@
-
-
 parameter ROM_L=13;
 logic [$clog2(ROM_L)-1:0] rom_addr;
 wire [7:0] rom_data;
