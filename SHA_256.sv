@@ -1,3 +1,6 @@
+`timescale 1ns/1ps
+`default_nettype none
+
 module ROM(
 input logic[2:0] addr,
 output logic[3:0] h0, h1, h2, h3, h4, h5, h6, h7);
@@ -28,6 +31,24 @@ $readmemb("hash_values.memh", rom);
 end
 // Access the ROM
 assign q = rom[addr];
+endmodule
+
+module sha_256_accelerator (clk, rst, ena, input_data, output_hash, output_valid);
+
+input wire clk, rst, ena;
+input wire[511:0] input_data; // Input to this module is always 512 bits long
+
+output logic[255:0] output_hash; // The output hash is always 256 bits long
+output logic output_valid;
+
+logic [31:0] h0, h1, h2, h3, h4, h5, h6, h7;
+
+always_comb begin
+	output_hash = {h0, h1, h2, h3, h4, h5, h6, h7};
+end
+
+
+
 endmodule
 
 Pre-processing (Padding):
