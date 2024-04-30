@@ -10,13 +10,14 @@ input wire input_valid;
 output logic [255:0] output_hash; // The output hash is always 256 bits long
 output logic output_valid;
 
-logic [31:0] h0, h1, h2, h3, h4, h5, h6, h7, a, b, c, d, e, f, g;
+logic [31:0] h0, h1, h2, h3, h4, h5, h6, h7, a, b, c, d, e, f, g, h;
 
 always_comb begin
 	output_hash = {h0, h1, h2, h3, h4, h5, h6, h7};
 end
 
-logic [511:0] w;
+wire [2047:0] k; // TODO: initialize this from the ROM
+logic [2047:0] w;
 logic [10:0] index;
 
 enum logic [2:0] {
@@ -36,7 +37,7 @@ always_ff @(posedge clk) begin : hashing_fsm
 				if (input_valid) begin
 					w <= {input_data, 1536'b0};
 					index <= 16*32;
-					// TODO: reset h0 - h7 to default values from ROM
+					// TODO: reset h0 - h7 to default values
 					a <= h0;
 					b <= h1;
 					c <= h2;
@@ -71,19 +72,22 @@ always_ff @(posedge clk) begin : hashing_fsm
 					hash_state <= S_OUTPUT_VALID;
 				end
 				else begin
+					h <= g;
+					g <= f;
+					f <= e;
+					e <= d + (h + ({e[5:0], e[31:6]} ^ {e[10:0], e[31:11]} ^ {e[24:0], e[31:25]}) + ((e & f) ^ (~e & g)) + k[index+31:index] + w[index+31:index]);
 					index <= index + 32;
 				end
+			end
 			S_OUTPUT_VALID : begin
 				// Stay at this state until a reset is called
 				if (~output_valid) begin
 					output_valid <= 1;
-				end		 
+				end		
+			end 
 		endcase
 	end
 end
-
-s0 = {w[6:0], in[31:7]} ^ {w[17:0], in[31:18]} ^ (w >> 3);
-s1 = {w[16:0], in[31:15]} ^ {w[18:0], in[31:13]} ^ (w >> 10);
 
 // looping functions
 	function [31:0] ch;
