@@ -1,75 +1,89 @@
 `timescale 1ns/1ps
 `default_nettype none
 
-module ROM(
-input logic[2:0] addr,
-output logic[3:0] h0, h1, h2, h3, h4, h5, h6, h7);
-always_comb
-begin
-case (addr)
-0: h0 = 0x6a09e667;
-1: h1 = 0xbb67ae85;
-2: h2 = 0x3c6ef372;
-3: h3 = 0xa54ff53a;
-4: h4 = 0x510e527f;
-5: h5 = 0x9b05688c;
-6: h6 = 0x1f83d9ab;
-7: h7 = 0x5be0cd19;
-endcase
-end
-endmodule
-
-module dual_port_rom (
-input logic clk,
-input logic[7:0] addr,
-output logic[15:0] q);
-// Declare the ROM as an array
-logic [15:0] rom[256];
-initial // Read the ROM contents from a file
-begin
-$readmemb("hash_values.memh", rom);
-end
-// Access the ROM
-assign q = rom[addr];
-endmodule
-
-module sha_256_accelerator (clk, rst, ena, input_data, output_hash, output_valid);
+module sha_256_accelerator (clk, rst, ena, input_data, input_valid, output_hash, output_valid);
 
 input wire clk, rst, ena;
-input wire[511:0] input_data; // Input to this module is always 512 bits long
-output logic [31:0] chunk1,chunk2,chunk3,chunk4,chunk5,chunk6,chunk7,chunk8,chunk9,chunk10,chunk11,chunk12,chunk13,chunk14,chunk15,chunk16;
+input wire [511:0] input_data; // Input to this module is always 512 bits long
+input wire input_valid;
 
-output logic[255:0] output_hash; // The output hash is always 256 bits long
+output logic [255:0] output_hash; // The output hash is always 256 bits long
 output logic output_valid;
 
-logic [31:0] h0, h1, h2, h3, h4, h5, h6, h7;
+logic [31:0] h0, h1, h2, h3, h4, h5, h6, h7, a, b, c, d, e, f, g;
 
 always_comb begin
 	output_hash = {h0, h1, h2, h3, h4, h5, h6, h7};
 end
 
+logic [511:0] w;
+logic [10:0] index;
 
+enum logic [2:0] {
+	S_IDLE = 0,
+	S_COMPUTE_MSA,
+	S_COMPRESSION_FUNC,
+	S_OUTPUT_VALID
+} hash_state;
 
-assign w = {input_data, }
-
-	always_comb begin : chunking
-		chunk1  = input_data[31:0]
-		chunk2  = input_data[63:32]
-		chunk3  = input_data[95:64]
-		chunk4  = input_data[127:96]
-		chunk5  = input_data[159:128]
-		chunk6  = input_data[191:160]
-		chunk7  = input_data[223:192]
-		chunk8  = input_data[255:224]
-		chunk9  = input_data[287:256]
-		chunk10 = input_data[319:288]
-		chunk11 = input_data[351:320]
-		chunk12 = input_data[383:352]
-		chunk13 = input_data[415:384]
-		chunk14 = input_data[447:416]
-		chunk15 = input_data[479:448]
-		chunk16 = input_data[511:480]
+always_ff @(posedge clk) begin : hashing_fsm
+	if (rst) begin
+		hash_state <= S_IDLE;
+	end 
+	else if (ena) begin
+		case(hash_state)
+			S_IDLE : begin
+				if (input_valid) begin
+					w <= {input_data, 1536'b0};
+					index <= 16*32;
+					// TODO: reset h0 - h7 to default values from ROM
+					a <= h0;
+					b <= h1;
+					c <= h2;
+					d <= h3;
+					e <= h4;
+					f <= h5;
+					g <= h6;
+					h <= h7;
+					hash_state <= S_COMPUTE_MSA;
+				end
+			end
+			S_COMPUTE_MSA : begin
+				if (index == 63*32) begin
+					hash_state <= S_COMPRESSION_FUNC;
+					index <= 0;
+				end
+				else begin
+					w[index : index+32] <= 
+						w[index-16*32+31:index-16*32] + (
+						{w[index-15*32+6:index-15*32], w[index-15*32+31:index-15*32+7]} ^ 
+						{w[index-15*32+17:index-15*32], w[index-15*32+31:index-15*32+18]} ^
+						(w[index-15*32+31:index-15*32] >> 3)) + 
+						w[index-7*32+31:index-7*32] + (
+						{w[index-2*32+16:index-2*32], w[index-2*32+31:index-2*32+17]} ^
+						{w[index-2*32+18:index-2*32], w[index-2*32+31:index-2*32+19]} ^
+						(w[index-2*32:index-2*32] >> 10));
+					index <= index + 32;
+				end
+			end
+			S_COMPRESSION_FUNC : begin
+				if (index == 63*32) begin
+					hash_state <= S_OUTPUT_VALID;
+				end
+				else begin
+					index <= index + 32;
+				end
+			S_OUTPUT_VALID : begin
+				// Stay at this state until a reset is called
+				if (~output_valid) begin
+					output_valid <= 1;
+				end		 
+		endcase
 	end
+end
+
+s0 = {w[6:0], in[31:7]} ^ {w[17:0], in[31:18]} ^ (w >> 3);
+s1 = {w[16:0], in[31:15]} ^ {w[18:0], in[31:13]} ^ (w >> 10);
 
 // looping functions
 	function [31:0] ch;
