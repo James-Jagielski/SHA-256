@@ -1,9 +1,10 @@
 from Utils.helper import b2Tob16, preprocessMessage, chunker, initializer
 from Utils.utils import *
 from Utils.constants import *
+import cocotb
 
-
-def sha256(message): 
+@cocotb.test()
+def sha_256_accelerator(message): 
     k = initializer(K)
     h0, h1, h2, h3, h4, h5, h6, h7 = initializer(h_hex)
     chunks = preprocessMessage(message)
@@ -51,10 +52,10 @@ def sha256(message):
         digest += b2Tob16(val)
     return digest
 
-if __name__ == '__main__':
-    verdict = 'y'
-    while verdict == 'y':
-        input_message = input('Type or copy your message here: ')
-        print('Your message: ', input_message)
-        print('Hash: ', sha256(input_message))
-        verdict = input('Do you want to tryte another text? (y/n): ').lower()
+# if __name__ == '__main__':
+#     verdict = 'y'
+#     while verdict == 'y':
+#         input_message = input('Type or copy your message here: ')
+#         print('Your message: ', input_message)
+#         print('Hash: ', sha_256_accelerator(input_message))
+#         verdict = input('Do you want to tryte another text? (y/n): ').lower()
