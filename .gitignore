@@ -1,4 +1,4 @@
-./cocotb/sim_build
-Utils/*
-__pycache__/*
+cocotb/sim_build/*
+cocotb/Utils/*
+cocotb/__pycache__/*
 results.xml
