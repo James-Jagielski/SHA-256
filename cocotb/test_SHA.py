@@ -1,4 +1,5 @@
 # Simple tests for an counter module
+import binascii
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import Timer, RisingEdge
@@ -12,9 +13,9 @@ async def SHA_256(dut):
     cocotb.start_soon(Clock(dut.clk, 1, units="ns").start())
 
     # initalize
-    test_str = "GeeksforGeeks"
+    test_str = bin(2**511)
     unpadded = ''.join(format(ord(x), 'b') for x in test_str)
-    dut.input_data.value = 2*511
+    dut.input_data.value = 2**511
     dut.input_valid.value = 1
     dut.rst.value = 1
     dut.ena.value = 0
@@ -30,6 +31,8 @@ async def SHA_256(dut):
     dut._log.info("Input flag is %s", dut.input_valid.value)
     dut._log.info("Output flag is %s", dut.output_valid.value)
     hash = dut.output_hash.value
+    test = format(int(message,16),'b')
+    #test = bin(int.from_bytes(binascii.unhexlify(message), byteorder='big'))
     # run for 50ns checking count on each rising edge
-    assert message == hash, f"The hashs are equal python:{message} verilog:{hash}"
+    assert test == hash, f"The hashs are equal python:{test} verilog:{hash}"
         
