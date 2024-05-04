@@ -75,7 +75,7 @@ always_ff @(posedge clk) begin : hashing_fsm
 				end
 				else begin
 
-					block_rom #(.L(ROM_L), .W(32), .INIT("mems/has_values.memh")) ROM(.clk(clk), .addr(index/32), .data(k));
+					block_rom #(.L(ROM_L), .W(32), .INIT("mems/hash_values.memh")) ROM(.clk(clk), .addr(index/32), .data(k));
 					h <= g;
 					g <= f;
 					f <= e;
