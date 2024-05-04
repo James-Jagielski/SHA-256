@@ -16,9 +16,12 @@ always_comb begin
 	output_hash = {a, b, c, d, e, f, g, h};
 end
 
-wire [2047:0] k; // TODO: initialize this from the ROM
+// wire [2047:0] k; // TODO: initialize this from the ROM
+wire [32:0] k;
 logic [2047:0] w;
 logic [10:0] index;
+parameter ROM_L=64;
+logic [$clog2(ROM_L)-1:0] rom_addr;
 
 enum logic [2:0] {
 	S_IDLE = 0,
@@ -71,6 +74,8 @@ always_ff @(posedge clk) begin : hashing_fsm
 					hash_state <= S_OUTPUT_VALID;
 				end
 				else begin
+
+					block_rom #(.L(ROM_L), .W(32), .INIT("mems/has_values.memh")) ROM(.clk(clk), .addr(index/32), .data(k));
 					h <= g;
 					g <= f;
 					f <= e;
