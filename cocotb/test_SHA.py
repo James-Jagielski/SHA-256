@@ -13,9 +13,9 @@ async def SHA_256(dut):
     cocotb.start_soon(Clock(dut.clk, 1, units="ns").start())
 
     # initalize
-    test_str = bin(2**511)
+    test_str = "GeeksforGeeks"
     unpadded = ''.join(format(ord(x), 'b') for x in test_str)
-    dut.input_data.value = 2**511
+    dut.input_data.value = int(unpadded + "0"*(512-len(unpadded)), 2)
     dut.input_valid.value = 1
     dut.rst.value = 1
     dut.ena.value = 0
@@ -25,7 +25,9 @@ async def SHA_256(dut):
     dut.rst.value = 0
     dut.ena.value = 1
 
-    message = sha_256_accelerator(test_str)
+    dut._log.info("INPUT DATA VALUE %s", dut.input_data.value)
+
+    message = sha_256_accelerator("GeeksforGeeks")
     await Timer(10000, units="ns")
     dut._log.info("Final state is %s", dut.hash_state.value)
     dut._log.info("Input flag is %s", dut.input_valid.value)
