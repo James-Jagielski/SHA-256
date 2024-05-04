@@ -12,7 +12,7 @@ VERILOG_SOURCES = ../SHA_256.sv
 TOPLEVEL = SHA_256
 
 # MODULE is the basename of the Python test file
-MODULE = SHA_256
+MODULE = test_SHA
 
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim
