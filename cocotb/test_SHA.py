@@ -13,7 +13,7 @@ async def SHA_256(dut):
 
     # initalize
     test_str = "GeeksforGeeks"
-    dut.input_data.value = ' '.join(format(ord(x), 'b') for x in test_str)
+    dut.input_data.value = int(''.join(format(ord(x), 'b') for x in test_str))
     dut.rst.value = 1
     dut.ena.value = 0
 
