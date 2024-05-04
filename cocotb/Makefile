@@ -4,7 +4,7 @@
 SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
 
-VERILOG_SOURCES = SHA_256.sv
+VERILOG_SOURCES = ../SHA_256.sv
 
 # use VHDL_SOURCES for VHDL files
 

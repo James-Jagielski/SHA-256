@@ -3,7 +3,6 @@ from Utils.utils import *
 from Utils.constants import *
 import cocotb
 
-@cocotb.test()
 def sha_256_accelerator(message): 
     k = initializer(K)
     h0, h1, h2, h3, h4, h5, h6, h7 = initializer(h_hex)
