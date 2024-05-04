@@ -6,7 +6,7 @@ module block_rom(clk, addr, data);
 
 parameter W = 32; // Width of each row of  the memory
 parameter L = 64; // Length fo the memory
-parameter INIT = "./mems/hash_values.memh";
+parameter INIT = "../mems/hash_values.memh";
 
 input wire clk;
 input wire [$clog2(L)-1:0] addr;
