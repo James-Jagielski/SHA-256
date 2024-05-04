@@ -26,5 +26,5 @@ async def SHA_256(dut):
     hash = dut.output_hash.value
     await Timer(10000, units="ns")
     # run for 50ns checking count on each rising edge
-    assert message == hash, f"The hashs are equal:{message} ticks:{hash}"
+    assert message == hash, f"The hashs are equal python:{message} verilog:{hash}"
         
