@@ -4,12 +4,12 @@
 SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
 
-VERILOG_SOURCES = ../SHA_256.sv ../block_rom.sv
+VERILOG_SOURCES = ../sha_256_accelerator.sv ../block_rom.sv
 
 # use VHDL_SOURCES for VHDL files
 
 # TOPLEVEL is the name of the toplevel module in your Verilog or VHDL file
-TOPLEVEL = SHA_256
+TOPLEVEL = sha_256_accelerator
 
 # MODULE is the basename of the Python test file
 MODULE = test_SHA
