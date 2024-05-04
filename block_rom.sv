@@ -12,7 +12,7 @@ input wire clk;
 input wire [$clog2(L)-1:0] addr;
 output logic [W-1:0] data;
 
-logic [W-1:0] rom [0:L-1];
+(* rom_style = "block" *) logic [W-1:0] rom [0:L-1];
 initial begin
   $display("###########################################");
   $display("Initializing block rom from file %s.", INIT);
