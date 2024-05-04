@@ -37,6 +37,7 @@ always_ff @(posedge clk) begin : hashing_fsm
 		case(hash_state)
 			S_IDLE : begin
 				if (input_valid) begin
+					output_valid <= 0;
 					w <= {input_data, 1536'b0};
 					index <= 16*32;
 					a <= 32'h6a09e667;
