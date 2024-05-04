@@ -14,7 +14,8 @@ async def SHA_256(dut):
     # initalize
     test_str = "GeeksforGeeks"
     unpadded = ''.join(format(ord(x), 'b') for x in test_str)
-    dut.input_data.value = int(unpadded + "0"*(512-len(unpadded)))
+    dut.input_data.value = 2*511
+    dut.input_valid.value = 1
     dut.rst.value = 1
     dut.ena.value = 0
 
@@ -24,8 +25,11 @@ async def SHA_256(dut):
     dut.ena.value = 1
 
     message = sha_256_accelerator(test_str)
-    hash = dut.output_hash.value
     await Timer(10000, units="ns")
+    dut._log.info("Final state is %s", dut.hash_state.value)
+    dut._log.info("Input flag is %s", dut.input_valid.value)
+    dut._log.info("Output flag is %s", dut.output_valid.value)
+    hash = dut.output_hash.value
     # run for 50ns checking count on each rising edge
     assert message == hash, f"The hashs are equal python:{message} verilog:{hash}"
         
