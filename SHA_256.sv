@@ -16,8 +16,7 @@ always_comb begin
 	output_hash = {a, b, c, d, e, f, g, h};
 end
 
-// wire [2047:0] k; // TODO: initialize this from the ROM
-wire [32:0] k;
+wire [31:0] k;
 logic [2047:0] w;
 logic [10:0] index;
 parameter ROM_L=64;
@@ -79,11 +78,11 @@ always_ff @(posedge clk) begin : hashing_fsm
 					h <= g;
 					g <= f;
 					f <= e;
-					e <= d + (h + ({e[5:0], e[31:6]} ^ {e[10:0], e[31:11]} ^ {e[24:0], e[31:25]}) + ((e & f) ^ (~e & g)) + k[index+31:index] + w[index+31:index]);
+					e <= d + (h + ({e[5:0], e[31:6]} ^ {e[10:0], e[31:11]} ^ {e[24:0], e[31:25]}) + ((e & f) ^ (~e & g)) + k + w[index+31:index]);
 					d <= c;
 					c <= b;
 					b <= a;
-					a <= (h + ({e[5:0], e[31:6]} ^ {e[10:0], e[31:11]} ^ {e[24:0], e[31:25]}) + ((e & f) ^ (~e & g)) + k[index+31:index] + w[index+31:index]) + 
+					a <= (h + ({e[5:0], e[31:6]} ^ {e[10:0], e[31:11]} ^ {e[24:0], e[31:25]}) + ((e & f) ^ (~e & g)) + k + w[index+31:index]) + 
 						(({a[1:0], a[31:2]} ^ {a[12:0], a[31:13]} ^ {a[21:0], a[31:22]}) + ((a & b) ^ (a & c) ^ (b & c)));
 					index <= index + 32;
 				end
