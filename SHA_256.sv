@@ -29,6 +29,8 @@ enum logic [2:0] {
 	S_OUTPUT_VALID
 } hash_state;
 
+block_rom romrom (.clk(clk), .addr(index[10:6]), .data(k));
+
 always_ff @(posedge clk) begin : hashing_fsm
 	if (rst) begin
 		hash_state <= S_IDLE;
@@ -74,8 +76,6 @@ always_ff @(posedge clk) begin : hashing_fsm
 					hash_state <= S_OUTPUT_VALID;
 				end
 				else begin
-
-					block_rom #(.L(ROM_L), .W(32), .INIT("mems/hash_values.memh")) ROM(.clk(clk), .addr(index/32), .data(k));
 					h <= g;
 					g <= f;
 					f <= e;

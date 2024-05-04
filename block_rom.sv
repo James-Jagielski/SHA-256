@@ -4,9 +4,9 @@
 // Based on UG901 - The Vivado Synthesis Guide
 module block_rom(clk, addr, data);
 
-parameter W = 8; // Width of each row of  the memory
-parameter L = 32; // Length fo the memory
-parameter INIT = "zeros.memh";
+parameter W = 32; // Width of each row of  the memory
+parameter L = 64; // Length fo the memory
+parameter INIT = "./mems/hash_values.memh";
 
 input wire clk;
 input wire [$clog2(L)-1:0] addr;
