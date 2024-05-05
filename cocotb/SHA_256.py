@@ -7,7 +7,6 @@ def sha_256_accelerator(message):
     k = initializer(K)
     h0, h1, h2, h3, h4, h5, h6, h7 = initializer(h_hex)
     chunks = preprocessMessage(message)
-    print(f"CHUNKS: {chunks}")
     for chunk in chunks:
         w = chunker(chunk, 32)
         for _ in range(48):

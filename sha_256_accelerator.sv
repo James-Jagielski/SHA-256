@@ -27,7 +27,7 @@ enum logic [2:0] {
 	S_OUTPUT_VALID
 } hash_state;
 
-block_rom ROM (.clk(clk), .addr(index[10:5]), .data(k));
+block_rom ROM (.clk(clk), .addr(64-index[10:5]), .data(k));
 
 always_ff @(posedge clk) begin : hashing_fsm
 	if (rst) begin
@@ -39,7 +39,7 @@ always_ff @(posedge clk) begin : hashing_fsm
 				if (input_valid) begin
 					output_valid <= 0;
 					w <= {input_data, 1536'b0};
-					index <= 16*32;
+					index <= 2047 - 16*32;
 					a <= 32'h6a09e667;
 					b <= 32'hbb67ae85;
 					c <= 32'h3c6ef372;
@@ -52,38 +52,38 @@ always_ff @(posedge clk) begin : hashing_fsm
 				end
 			end
 			S_COMPUTE_MSA : begin
-				if (index == 63*32) begin
+				w[index-:32] <= 
+					w[index+16*32-:32] + (
+					{w[index+15*32-25-:7], w[index+15*32-:25]} ^ 
+					{w[index+15*32-14-:18], w[index+15*32-:14]} ^
+					(w[index+15*32-:32] >> 3)) + 
+					w[index+7*32-:32] + (
+					{w[index+2*32-15-:17], w[index+2*32-:15]} ^
+					{w[index+2*32-13-:19], w[index+2*32-:13]} ^
+					(w[index+2*32-:32] >> 10));
+				if (index == 31) begin
 					hash_state <= S_COMPRESSION_FUNC;
-					index <= 0;
+					index <= 2047;
 				end
 				else begin
-					w[index+:32] <= 
-						w[index-16*32+:32] + (
-						{w[index-15*32+:7], w[index-15*32+7+:25]} ^ 
-						{w[index-15*32+:18], w[index-15*32+18+:14]} ^
-						(w[index-15*32+:32] >> 3)) + 
-						w[index-7*32+:32] + (
-						{w[index-2*32+:17], w[index-2*32+17+:15]} ^
-						{w[index-2*32+:19], w[index-2*32+19+:13]} ^
-						(w[index-2*32+:32] >> 10));
-					index <= index + 32;
+					index <= index - 32;
 				end
 			end
 			S_COMPRESSION_FUNC : begin
-				if (index == 63*32) begin
+				h <= g;
+				g <= f;
+				f <= e;
+				e <= d + (h + ({e[5:0], e[31:6]} ^ {e[10:0], e[31:11]} ^ {e[24:0], e[31:25]}) + ((e & f) ^ (~e & g)) + k + w[index-:32]);
+				d <= c;
+				c <= b;
+				b <= a;
+				a <= (h + ({e[5:0], e[31:6]} ^ {e[10:0], e[31:11]} ^ {e[24:0], e[31:25]}) + ((e & f) ^ (~e & g)) + k + w[index-:32]) + 
+					(({a[1:0], a[31:2]} ^ {a[12:0], a[31:13]} ^ {a[21:0], a[31:22]}) + ((a & b) ^ (a & c) ^ (b & c)));
+				if (index == 31) begin
 					hash_state <= S_OUTPUT_VALID;
 				end
 				else begin
-					h <= g;
-					g <= f;
-					f <= e;
-					e <= d + (h + ({e[5:0], e[31:6]} ^ {e[10:0], e[31:11]} ^ {e[24:0], e[31:25]}) + ((e & f) ^ (~e & g)) + k + w[index+:32]);
-					d <= c;
-					c <= b;
-					b <= a;
-					a <= (h + ({e[5:0], e[31:6]} ^ {e[10:0], e[31:11]} ^ {e[24:0], e[31:25]}) + ((e & f) ^ (~e & g)) + k + w[index+:32]) + 
-						(({a[1:0], a[31:2]} ^ {a[12:0], a[31:13]} ^ {a[21:0], a[31:22]}) + ((a & b) ^ (a & c) ^ (b & c)));
-					index <= index + 32;
+					index <= index - 32;
 				end
 			end
 			S_OUTPUT_VALID : begin
