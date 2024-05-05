@@ -38,6 +38,6 @@ To run the unit tests, you must have the OSS CAD Suite and cocotb installed.
 [Cocotb Official Docs](https://docs.cocotb.org/en/stable/quickstart.html)- good place to get started if you are already familiar with python and coroutines.
 [cocotb-test](hhttps://github.com/themperek/cocotb-test)- a wrapper for cocotb that makes things more useful. You shouldn’t have to interact with it too much but it’s the basis of how I made this work with a flatter directory structure. 
 
-Our make file will take care of calling the files. From the `cocotb` directory in the repo, run
-`$make` in the terminal to run the test.
+Our make file will take care of calling the files. **From the `cocotb` directory in the repo, run
+`$make` in the terminal to run the test.**
 
