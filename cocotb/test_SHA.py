@@ -57,7 +57,11 @@ async def SHA_256(dut):
             #dut._log.info("h0 %s", dut.h0.value)
         
         dut._log.info("Output Valid Flag %s", dut.output_valid.value)
-        hash = str(dut.output_hash.value)[12:268]
+        raw_hash = str(dut.output_hash.value)
+        if (raw_hash[0:10] == "LogicArray"):
+            hash = raw_hash[12:268]
+        else:
+            hash = raw_hash
 
         message = sha_256_accelerator(test_str)
         test = format(int(message,16),'b')
