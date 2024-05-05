@@ -11,9 +11,9 @@ if cocotb.simulator.is_running():
 
 tests = ["",
 "abc",
-"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
+"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq", 
 "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu",
-"a" * 1000000,
+"a" * 1000,
 "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopqp", #edge-case: between 448 and 512 bits long message (456)
 "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopqpqpmomom", #edge-case: 512 bits
 "ibsnqwpzhillptcinmtvamymvixjxaumjddwxsxxjhjhnftynajhsluuctgjytazlcdewsexbjcpumdcfbbbmzwxcmjmnxfqurvaarapdswyatlyvqsxdefmehicwwdnkshzgysaxxenmtpirbhphxyaesgwigdxzqpekouenexqkqgpnzzwyjppc",
@@ -22,8 +22,8 @@ tests = ["",
 "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1",
 "cf5b16a778af8380036ce59e7b0492370b249b11e8f07a51afac45037afee9d1",
 "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0",
-"3234a5b08b1112a6cb90bf9920ca1863535c9380a65633e5442befda64f84a6f", #hashlib result
-"19c638400f16d98b8d955a0bfe853cb11c33a987389ac2311b9c0ba2cd1efa34", #hashlib result
+"3234a5b08b1112a6cb90bf9920ca1863535c9380a65633e5442befda64f84a6f",
+"19c638400f16d98b8d955a0bfe853cb11c33a987389ac2311b9c0ba2cd1efa34",
 "6540979c2b56a3f4b17dada9a3d1fba7161d0e10f2c2d87b0b6486377bf88ecc"]
 
 
@@ -31,31 +31,37 @@ tests = ["",
 async def SHA_256(dut):
     # generate a clock
     cocotb.start_soon(Clock(dut.clk, 1, units="ns").start())
-    for j in range(2):
-        # initalize
+    for j in range(16):
+        print(f"\nTest #{j+1}")
         test_str = tests[j]
         preprocessed = (preprocessMessage(test_str))
-        dut.input_data.value = int("".join(str(i) for i in preprocessed[0]), 2)
-        dut.input_valid.value = 1
+        
         dut.rst.value = 1
         dut.ena.value = 0
-
         await Timer(3, units="ns")
-        # hash variables
-        dut.rst.value = 0
-        dut.ena.value = 1
 
-        dut._log.info("INPUT DATA VALUE %s", dut.input_data.value)
+        for k in range(len(preprocessed)):
+            dut.input_data.value = int("".join(str(i) for i in preprocessed[k]), 2)
+            dut.rst.value = 0
+            dut.ena.value = 1
+            await Timer(3, units="ns")
 
-        message = sha_256_accelerator("GJamesKenta")
+            dut._log.info("INPUT DATA VALUE %s", dut.input_data.value)
+            dut.input_valid.value = 1
 
-        await Timer(114, units="ns")
-
-        dut._log.info("Final state is %s", dut.hash_state.value)
-        dut._log.info("Input flag is %s", dut.input_valid.value)
-        dut._log.info("Output flag is %s", dut.output_valid.value)
+            await Timer(60, units="ns")
+            #dut._log.info("index %s", dut.index.value)
+            #dut._log.info("A %s E %s H %s", dut.a.value, dut.e.value, dut.h.value)
+            dut.input_valid.value = 0
+            await Timer(70, units="ns")
+            #dut._log.info("h0 %s", dut.h0.value)
+        
+        dut._log.info("Output Valid Flag %s", dut.output_valid.value)
         hash = str(dut.output_hash.value)[12:268]
+
+        message = sha_256_accelerator(test_str)
         test = format(int(message,16),'b')
+        test = "0"*(256-len(test)) + test
 
         print("HASH", hash)
         print("TEST", test)
