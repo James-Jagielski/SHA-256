@@ -34,10 +34,7 @@ For testing we used cocotb software to unit test edge cases. Through these simul
 During our implementation of the SHA-256 we found these websites to be useful for understanding the algorithm: [Step by step walk through](https://www.educative.io/answers/what-are-the-different-steps-in-sha-256) and [Pseudocode section](https://en.wikipedia.org/wiki/SHA-2).
 To run the unit tests, you must have the OSS CAD Suite and cocotb installed. 
 
-Run 
-'''
-setup_cafe
-'''
+Run '''setup_cafe'''
 
 [OSS CAD Suite](https://www.opensourceagenda.com/projects/oss-cad-suite-build#Installation) - open source tools for digital design and verification
 [Cocotb Official Docs](https://docs.cocotb.org/en/stable/quickstart.html)- good place to get started if you are already familiar with python and coroutines.
